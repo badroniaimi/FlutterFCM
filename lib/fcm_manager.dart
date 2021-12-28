@@ -56,12 +56,11 @@ class FcmManager {
     }
     try {
       var response = await client.post(
-          Uri.parse('http://192.168.1.13:8080/api/v1/devices'),
+          Uri.parse('http://192.168.1.9:8080/api/v1/devices'),
           body: {'token': token, 'udid': udid});
       var decodedResponse =
           convert.jsonDecode(convert.utf8.decode(response.bodyBytes)) as Map;
       var key = decodedResponse['key'] as String;
-      print(key);
     } finally {
       client.close();
     }

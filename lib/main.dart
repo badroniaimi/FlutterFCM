@@ -1,10 +1,11 @@
 import 'dart:convert' as convert;
-import 'package:fcm_http/contact.dart';
 import 'package:fcm_http/helper.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:fcm_http/fcm_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +20,22 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'COVID Stats',
       debugShowCheckedModeBanner: false,
+      localeResolutionCallback: (
+        Locale? locale,
+        Iterable<Locale> supportedLocales,
+      ) {
+        return locale;
+      },
+      localizationsDelegates: [
+        AppLocalizations.delegate, // Add this line
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('fr', ''),
+        Locale('en', ''),
+      ],
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -59,21 +76,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _sendData() async {
     showLoader(context);
-    var client = http.Client();
-    try {
-      List<Contact> contacts=List.filled(3, new Contact.name(1, DateTime.now(), "key"));
-      contacts.add(new Contact.name(2, DateTime.now(), "key2"));
-      contacts.add(new Contact.name(3, DateTime.now(), "key3"));
-      var response = await client.post(
-          Uri.parse('example.com/whatsit/create'),
-          body: contacts);
-      var decodedResponse = convert.jsonDecode(convert.utf8.decode(response.bodyBytes)) as Map;
-      var uri = Uri.parse(decodedResponse['uri'] as String);
-      hideLoader(context);
-      print(await client.get(uri));
-    } finally {
-    client.close();
+    var url = Uri.parse(
+        'https://corona.lmao.ninja/v2/countries/Morocco?yesterday=false&strict=true&query =');
+
+    // Await the http get response, then decode the json-formatted response.
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      setState(() {
+        this.data = convert.jsonDecode(response.body) as Map<String, dynamic>;
+      });
+    } else {
+      print('Request failed with status: ${response.statusCode}.');
     }
+    hideLoader(context);
   }
 
   @override
@@ -84,21 +99,24 @@ class _MyHomePageState extends State<MyHomePage> {
     fcm.initFCM();
     this.initData();
   }
-  buildHome(){
+
+  buildHome() {
     return Column(
       children: [
         Row(
           children: [
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
-                      Text("Total cases"),
-                      SizedBox(height: 10.0,),
+                      Text(AppLocalizations.of(context)!.totalcases),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['cases'].toString())
                     ],
                   ),
@@ -107,15 +125,17 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
                       Text("Today's cases"),
-                      SizedBox(height: 10.0,),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['todayCases'].toString())
                     ],
                   ),
@@ -128,15 +148,17 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           children: [
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
                       Text("Total deaths"),
-                      SizedBox(height: 10.0,),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['deaths'].toString())
                     ],
                   ),
@@ -145,15 +167,17 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
                       Text("Today's deaths"),
-                      SizedBox(height: 10.0,),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['todayDeaths'].toString())
                     ],
                   ),
@@ -166,15 +190,17 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           children: [
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
                       Text("Total recovered"),
-                      SizedBox(height: 10.0,),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['recovered'].toString())
                     ],
                   ),
@@ -183,15 +209,17 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
                       Text("Today's recovered"),
-                      SizedBox(height: 10.0,),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['todayRecovered'].toString())
                     ],
                   ),
@@ -204,15 +232,17 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           children: [
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
                       Text("Total tests"),
-                      SizedBox(height: 10.0,),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['tests'].toString())
                     ],
                   ),
@@ -221,16 +251,20 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Container(
-              width: MediaQuery.of(context).size.width/2,
-              padding:  const EdgeInsets.all(18.0),
+              width: MediaQuery.of(context).size.width / 2,
+              padding: const EdgeInsets.all(18.0),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Column(
                     children: [
-                      Text("Tests / million",
-                        textAlign: TextAlign.center,),
-                      SizedBox(height: 10.0,),
+                      Text(
+                        "Tests / million",
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       Text(data['testsPerOneMillion'].toString())
                     ],
                   ),
@@ -243,6 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
   }
+
   initData() async {
     var url = Uri.parse(
         'https://corona.lmao.ninja/v2/countries/Morocco?yesterday=false&strict=true&query =');
@@ -276,11 +311,12 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: data.length>0?buildHome():CircularProgressIndicator(),
+        child: data.length > 0 ? buildHome() : CircularProgressIndicator(),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton:
+      FloatingActionButton(
         onPressed: _sendData,
-        tooltip: 'Send daata',
+        tooltip: 'refresh',
         child: const Icon(Icons.refresh),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
